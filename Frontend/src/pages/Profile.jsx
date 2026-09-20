@@ -9,7 +9,6 @@ import {
   HeartPulse,
   LockKeyhole,
   Mail,
-  PhoneCall,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
@@ -244,24 +243,6 @@ function WorklistActivity({ dashboard, isLoading, error }) {
           </div>
         </div>
       </div>
-
-      <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-blue-600">
-            <PhoneCall aria-hidden="true" size={17} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700">
-              Outreach calls
-            </p>
-            <p className="mt-1 break-words text-sm font-semibold leading-5 text-blue-900">
-              {metrics.successfulCalls} successful,{" "}
-              {metrics.unsuccessfulAttempts} unanswered,{" "}
-              {metrics.requiringAdditionalAction} need action
-            </p>
-          </div>
-        </div>
-      </div>
     </section>
   );
 }
@@ -353,7 +334,7 @@ function Profile() {
                       {user.name || "CareConnect User"}
                     </h1>
                     <p className="mt-1 break-words text-sm text-slate-500">
-                      {user.email || "No email on file"}
+                      {user.email?.toLowerCase() || "No email on file"}
                     </p>
                   </div>
                 </div>
@@ -382,7 +363,11 @@ function Profile() {
                     label="Full name"
                     value={user.name}
                   />
-                  <DetailCard icon={Mail} label="Email" value={user.email} />
+                  <DetailCard
+                    icon={Mail}
+                    label="Email"
+                    value={user.email?.toLowerCase()}
+                  />
                   <DetailCard
                     icon={ShieldCheck}
                     label="Role"

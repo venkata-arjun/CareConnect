@@ -390,7 +390,7 @@ function PatientDetails() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center lg:justify-end">
+                <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center lg:justify-end">
                   <StatusBadge status={patient.status} />
                   {callButton("hidden lg:flex")}
                 </div>

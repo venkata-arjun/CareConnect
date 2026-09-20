@@ -66,6 +66,25 @@ async function verifyCoordinator(client, coordinatorId) {
   return result.rowCount > 0;
 }
 
+async function syncPatientFollowUp(client, followUpId, status, nextAction) {
+  await client.query(
+    `
+      UPDATE patients
+          SET status = $1::varchar,
+            previous_follow_up = $1::text,
+          last_contact = TO_CHAR(CURRENT_TIMESTAMP, 'DD Mon YYYY'),
+          next_action = $2,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = (
+        SELECT patient_id
+        FROM follow_ups
+        WHERE id = $3
+      )
+    `,
+    [status, nextAction ?? null, followUpId],
+  );
+}
+
 function validateCallFields({
   callOutcome,
   coordinatorNotes,
@@ -247,6 +266,8 @@ export async function createCall(req, res) {
       ],
     );
 
+    await syncPatientFollowUp(client, followUpId, "Pending", nextAction);
+
     const call = await getCall(client, insertResult.rows[0].id);
     await client.query("COMMIT");
 
@@ -361,6 +382,17 @@ export async function updateCall(req, res) {
         status,
         id,
       ],
+    );
+
+    const followUpResult = await client.query(
+      "SELECT follow_up_id FROM call_activities WHERE id = $1",
+      [id],
+    );
+    await syncPatientFollowUp(
+      client,
+      followUpResult.rows[0].follow_up_id,
+      status,
+      nextAction,
     );
 
     const call = await getCall(client, id);
