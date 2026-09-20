@@ -68,15 +68,6 @@ The app will be available at `http://localhost:5173` (or the URL Vite prints in 
 
 ---
 
-## Backend Login
-
-The frontend authenticates through the Express backend. The development seed user is:
-
-```text
-Email:    coordinator@careconnect.com
-Password: Coordinator@20810
-```
-
 The JWT is stored as `accessToken` in localStorage for this client-side architecture. The API service adds it to protected requests and clears it on a 401 response.
 
 ---
