@@ -15,7 +15,6 @@ import {
   getCall,
   getPatient,
   updateCall,
-  updateFollowUpStatus,
 } from "../services/api";
 
 function getSavedDraft() {
@@ -96,8 +95,6 @@ function ActivityReview() {
   async function saveActivity(status) {
     setIsSaving(true);
     try {
-      const followUpStatus =
-        finalAction === "Complete Follow-Up" ? "Completed" : "Pending";
       const updated = await updateCall(draft.activityId, {
         callOutcome: draft.callOutcome,
         coordinatorNotes: draft.coordinatorNotes,
@@ -110,7 +107,6 @@ function ActivityReview() {
         aiGuidance: draft.aiGuidance || null,
         status,
       });
-      await updateFollowUpStatus(draft.followUpId, followUpStatus);
       setActivity(updated);
       toast.success(
         status === "Completed" ? "Activity completed" : "Activity saved",

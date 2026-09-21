@@ -8,6 +8,12 @@ app.listen(PORT, async () => {
   console.log(`CareConnect API running on port ${PORT}`);
 
   try {
+    await pool.query(`
+      ALTER TABLE patients DROP CONSTRAINT IF EXISTS patients_status_check;
+      ALTER TABLE patients
+        ADD CONSTRAINT patients_status_check
+        CHECK (status IN ('Pending', 'Follow-up', 'Completed'));
+    `);
     await pool.query("SELECT NOW()");
     console.log("PostgreSQL database connected");
   } catch (error) {

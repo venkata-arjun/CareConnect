@@ -41,14 +41,22 @@ function SaveError() {
   }, [patientId]);
 
   async function handleRetry() {
+    if (!draft?.callOutcome || draft.coordinatorNotes?.trim().length < 10) {
+      navigate(`/patient/${patientId}/call`);
+      return;
+    }
+
     setIsRetrying(true);
     setRetryMessage("");
     try {
       const call = await createCall({
         followUpId: draft?.followUpId || patient?.followUps?.[0]?.id,
         callOutcome: draft?.callOutcome,
-        coordinatorNotes: draft?.coordinatorNotes,
+        coordinatorNotes: draft.coordinatorNotes.trim(),
         nextAction: draft?.nextAction,
+        scheduledAt: draft?.scheduledAt || null,
+        aiSummary: draft?.aiSummary || null,
+        aiGuidance: draft?.aiGuidance || null,
       });
       localStorage.setItem(
         "followUpDraft",

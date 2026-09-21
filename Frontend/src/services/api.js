@@ -94,23 +94,12 @@ export function formatDateTime(dateValue) {
   });
 }
 
-function getProcedureStatus(status, followUps = []) {
-  if (status === "Completed") return "Completed";
-  if (
-    Array.isArray(followUps) &&
-    followUps.some((followUp) => followUp.status === "Completed")
-  ) {
-    return "Completed";
-  }
-  return "Pending";
-}
-
 export function normalizePatient(patient) {
   const followUps = (patient.follow_ups || []).map((followUp) => ({
     ...followUp,
     nextAction: followUp.next_action,
     scheduledAt: followUp.scheduled_at,
-    status: getProcedureStatus(followUp.status, [followUp]),
+    status: followUp.status,
   }));
   const nextFollowUp = followUps.find(
     (followUp) => followUp.status === "Pending" && followUp.scheduledAt,
@@ -128,7 +117,7 @@ export function normalizePatient(patient) {
     nextAction: patient.next_action,
     nextFollowUpDate: patient.next_follow_up_date || nextFollowUp?.scheduledAt,
     updatedAt: patient.updated_at,
-    status: getProcedureStatus(patient.status, followUps),
+    status: patient.status,
     followUps,
   };
 }
@@ -145,7 +134,7 @@ export function normalizeFollowUp(followUp) {
     riskScore: followUp.risk_score,
     riskCategory: followUp.risk_category,
     dischargeDate: followUp.discharge_date,
-    status: getProcedureStatus(followUp.status, [followUp]),
+    status: followUp.status,
     updatedAt: followUp.updated_at,
   };
 }

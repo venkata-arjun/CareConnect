@@ -1,11 +1,14 @@
-import { CheckCircle2, Clock3 } from "lucide-react";
+import { CalendarClock, CheckCircle2, Clock3 } from "lucide-react";
 
 function StatusBadge({ status }) {
   const isCompleted = status === "Completed";
-  const Icon = isCompleted ? CheckCircle2 : Clock3;
+  const isFollowUp = status === "Follow-up";
+  const Icon = isCompleted ? CheckCircle2 : isFollowUp ? CalendarClock : Clock3;
   const style = isCompleted
     ? "border-green-200 bg-green-50 text-green-700"
-    : "border-slate-200 bg-slate-50 text-slate-600";
+    : isFollowUp
+      ? "border-blue-200 bg-blue-50 text-blue-700"
+      : "border-slate-200 bg-slate-50 text-slate-600";
 
   return (
     <span

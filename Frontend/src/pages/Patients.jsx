@@ -107,6 +107,7 @@ function Patients() {
               >
                 <option value="All">All statuses</option>
                 <option value="Pending">Pending</option>
+                <option value="Follow-up">Follow-up</option>
                 <option value="Completed">Completed</option>
               </select>
             </label>
@@ -236,10 +237,11 @@ function Patients() {
                         <StatusBadge status={patient.status} />
                       </td>
                       <td className="whitespace-nowrap px-4 py-4 text-slate-600">
-                        {formatDateTime(patient.nextFollowUpDate) ===
-                        "Not available"
-                          ? "Not needed"
-                          : formatDateTime(patient.nextFollowUpDate)}
+                        {patient.status === "Follow-up"
+                          ? formatDate(patient.nextFollowUpDate)
+                          : patient.status === "Completed"
+                            ? "Not needed"
+                            : "Pending decision"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-4 text-slate-600">
                         {formatDateTime(patient.updatedAt)}

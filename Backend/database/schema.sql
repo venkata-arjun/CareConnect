@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS patients (
   diagnosis TEXT,
   risk_score INTEGER NOT NULL CHECK (risk_score BETWEEN 0 AND 100),
   risk_category VARCHAR(20) NOT NULL CHECK (risk_category IN ('HIGH', 'MEDIUM', 'LOW')),
-  status VARCHAR(30) NOT NULL DEFAULT 'Pending' CHECK (status IN ('Pending', 'Completed')),
+  status VARCHAR(30) NOT NULL DEFAULT 'Pending' CHECK (status IN ('Pending', 'Follow-up', 'Completed')),
   previous_follow_up TEXT,
   last_contact VARCHAR(100),
   next_action VARCHAR(100),
@@ -77,3 +77,8 @@ CREATE INDEX IF NOT EXISTS idx_follow_ups_coordinator_id ON follow_ups(coordinat
 CREATE INDEX IF NOT EXISTS idx_call_activities_follow_up_id ON call_activities(follow_up_id);
 CREATE INDEX IF NOT EXISTS idx_call_activities_coordinator_id ON call_activities(coordinator_id);
 CREATE INDEX IF NOT EXISTS idx_call_activities_status ON call_activities(status);
+
+ALTER TABLE patients DROP CONSTRAINT IF EXISTS patients_status_check;
+ALTER TABLE patients
+  ADD CONSTRAINT patients_status_check
+  CHECK (status IN ('Pending', 'Follow-up', 'Completed'));

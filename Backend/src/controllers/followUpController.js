@@ -52,6 +52,28 @@ async function verifyCoordinator(client, coordinatorId) {
   return result.rowCount > 0;
 }
 
+async function syncPatientStatus(client, patientId) {
+  await client.query(
+    `
+      UPDATE patients
+      SET status = (
+        SELECT CASE
+          WHEN f.status = 'Completed' THEN 'Completed'
+          WHEN f.next_action = 'Schedule Another Follow-Up'
+            AND f.scheduled_at IS NOT NULL THEN 'Follow-up'
+          ELSE 'Pending'
+        END
+        FROM follow_ups f
+        WHERE f.patient_id = $1
+        ORDER BY f.created_at DESC, f.id DESC
+        LIMIT 1
+      ), updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+    `,
+    [patientId],
+  );
+}
+
 export async function getFollowUps(req, res) {
   try {
     const { rows } = await pool.query(
@@ -158,12 +180,13 @@ export async function createFollowUp(req, res) {
         patientResult.rows[0].id,
         authenticatedCoordinatorId,
         status,
-        scheduledAt ?? null,
+        status === "Completed" ? null : scheduledAt ?? null,
         nextAction,
       ],
     );
 
     const followUp = await getFollowUp(client, insertResult.rows[0].id);
+    await syncPatientStatus(client, patientResult.rows[0].id);
     await client.query("COMMIT");
 
     res.status(201).json({
@@ -217,7 +240,7 @@ export async function updateFollowUp(req, res) {
     await client.query("BEGIN");
 
     const existing = await client.query(
-      "SELECT id FROM follow_ups WHERE id = $1",
+      "SELECT id, patient_id FROM follow_ups WHERE id = $1",
       [id],
     );
 
@@ -249,9 +272,16 @@ export async function updateFollowUp(req, res) {
             updated_at = CURRENT_TIMESTAMP
         WHERE id = $5
       `,
-      [authenticatedCoordinatorId, status, scheduledAt ?? null, nextAction, id],
+      [
+        authenticatedCoordinatorId,
+        status,
+        status === "Completed" ? null : scheduledAt ?? null,
+        nextAction,
+        id,
+      ],
     );
 
+    await syncPatientStatus(client, existing.rows[0].patient_id);
     const followUp = await getFollowUp(client, id);
     await client.query("COMMIT");
 
@@ -290,13 +320,20 @@ export async function updateFollowUpStatus(req, res) {
     return;
   }
 
+  let client;
+
   try {
-    const result = await pool.query(
+    client = await pool.connect();
+    await client.query("BEGIN");
+
+    const result = await client.query(
       `
         UPDATE follow_ups
-        SET status = $1, updated_at = CURRENT_TIMESTAMP
+        SET status = $1,
+            scheduled_at = CASE WHEN $1 = 'Completed' THEN NULL ELSE scheduled_at END,
+            updated_at = CURRENT_TIMESTAMP
         WHERE id = $2
-        RETURNING id
+        RETURNING id, patient_id
       `,
       [status, id],
     );
@@ -309,14 +346,21 @@ export async function updateFollowUpStatus(req, res) {
       return;
     }
 
-    const followUp = await getFollowUp(pool, id);
+    await syncPatientStatus(client, result.rows[0].patient_id);
+    const followUp = await getFollowUp(client, id);
+    await client.query("COMMIT");
     res.json({
       success: true,
       message: "Follow-up status updated successfully",
       data: followUp,
     });
   } catch (error) {
+    if (client) {
+      await client.query("ROLLBACK");
+    }
     sendDatabaseError(res, "Failed to update follow-up status", error);
+  } finally {
+    client?.release();
   }
 }
 

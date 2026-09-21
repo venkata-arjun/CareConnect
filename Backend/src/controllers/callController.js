@@ -75,33 +75,34 @@ async function syncPatientFollowUp(
 ) {
   const nextFollowUpDate =
     nextAction === "Schedule Another Follow-Up" ? scheduledAt || null : null;
-  const procedureStatus =
-    nextAction === "Complete Follow-Up" ? "Completed" : "Pending";
+  const procedureStatus = status === "Completed" ? "Completed" : "Pending";
 
   await client.query(
     `
       UPDATE follow_ups
       SET status = $1,
           scheduled_at = $2,
+          next_action = $3,
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $3
+        WHERE id = $4
     `,
-    [procedureStatus, nextFollowUpDate, followUpId],
+    [procedureStatus, nextFollowUpDate, nextAction ?? null, followUpId],
   );
 
   const patientStatusResult = await client.query(
     `
       SELECT CASE
-        WHEN EXISTS (
-          SELECT 1
-          FROM follow_ups f
-          WHERE f.patient_id = (
-            SELECT patient_id FROM follow_ups WHERE id = $1
-          )
-          AND f.status = 'Completed'
-        ) THEN 'Completed'
+        WHEN f.status = 'Completed' THEN 'Completed'
+        WHEN f.next_action = 'Schedule Another Follow-Up'
+          AND f.scheduled_at IS NOT NULL THEN 'Follow-up'
         ELSE 'Pending'
       END AS patient_status
+      FROM follow_ups f
+      WHERE f.patient_id = (
+        SELECT patient_id FROM follow_ups WHERE id = $1
+      )
+      ORDER BY f.created_at DESC, f.id DESC
+      LIMIT 1
     `,
     [followUpId],
   );

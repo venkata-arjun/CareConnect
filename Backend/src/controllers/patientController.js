@@ -18,8 +18,6 @@ const patientFields = `
 `;
 
 const allowedRiskCategories = new Set(["HIGH", "MEDIUM", "LOW"]);
-const allowedStatuses = new Set(["Pending", "Completed"]);
-
 function validatePatientInput(input, { partial = false } = {}) {
   const requiredFields = [
     ["patientId", input.patientId],
@@ -55,10 +53,6 @@ function validatePatientInput(input, { partial = false } = {}) {
     !allowedRiskCategories.has(input.riskCategory)
   ) {
     return "Invalid risk category";
-  }
-
-  if (input.status !== undefined && !allowedStatuses.has(input.status)) {
-    return "Invalid patient status";
   }
 
   if (input.riskFactors !== undefined && !Array.isArray(input.riskFactors)) {
@@ -101,7 +95,7 @@ export async function createPatient(req, res) {
         input.diagnosis.trim(),
         Number(input.riskScore),
         input.riskCategory,
-        input.status || "Pending",
+        "Pending",
         input.previousFollowUp || null,
         input.lastContact || null,
         input.nextAction || "Conduct Outreach Call",
@@ -148,7 +142,6 @@ export async function updatePatient(req, res) {
     risk_score:
       req.body.riskScore === undefined ? undefined : Number(req.body.riskScore),
     risk_category: req.body.riskCategory,
-    status: req.body.status,
     previous_follow_up: req.body.previousFollowUp,
     last_contact: req.body.lastContact,
     next_action: req.body.nextAction,
