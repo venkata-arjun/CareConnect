@@ -66,22 +66,63 @@ async function verifyCoordinator(client, coordinatorId) {
   return result.rowCount > 0;
 }
 
-async function syncPatientFollowUp(client, followUpId, status, nextAction) {
+async function syncPatientFollowUp(
+  client,
+  followUpId,
+  status,
+  nextAction,
+  scheduledAt,
+) {
+  const nextFollowUpDate =
+    nextAction === "Schedule Another Follow-Up" ? scheduledAt || null : null;
+  const procedureStatus =
+    nextAction === "Complete Follow-Up" ? "Completed" : "Pending";
+
+  await client.query(
+    `
+      UPDATE follow_ups
+      SET status = $1,
+          scheduled_at = $2,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+    `,
+    [procedureStatus, nextFollowUpDate, followUpId],
+  );
+
+  const patientStatusResult = await client.query(
+    `
+      SELECT CASE
+        WHEN EXISTS (
+          SELECT 1
+          FROM follow_ups f
+          WHERE f.patient_id = (
+            SELECT patient_id FROM follow_ups WHERE id = $1
+          )
+          AND f.status = 'Completed'
+        ) THEN 'Completed'
+        ELSE 'Pending'
+      END AS patient_status
+    `,
+    [followUpId],
+  );
+
+  const patientStatus = patientStatusResult.rows[0]?.patient_status || "Pending";
+
   await client.query(
     `
       UPDATE patients
           SET status = $1::varchar,
-            previous_follow_up = $1::text,
+            previous_follow_up = $2::text,
           last_contact = TO_CHAR(CURRENT_TIMESTAMP, 'DD Mon YYYY'),
-          next_action = $2,
+          next_action = $3,
           updated_at = CURRENT_TIMESTAMP
       WHERE id = (
         SELECT patient_id
         FROM follow_ups
-        WHERE id = $3
+        WHERE id = $4
       )
     `,
-    [status, nextAction ?? null, followUpId],
+    [patientStatus, status, nextAction ?? null, followUpId],
   );
 }
 
@@ -185,6 +226,7 @@ export async function createCall(req, res) {
     callOutcome,
     coordinatorNotes,
     nextAction,
+    scheduledAt,
     aiSummary,
     aiGuidance,
   } = req.body;
@@ -266,7 +308,13 @@ export async function createCall(req, res) {
       ],
     );
 
-    await syncPatientFollowUp(client, followUpId, "Pending", nextAction);
+    await syncPatientFollowUp(
+      client,
+      followUpId,
+      "Pending",
+      nextAction,
+      scheduledAt,
+    );
 
     const call = await getCall(client, insertResult.rows[0].id);
     await client.query("COMMIT");
@@ -293,6 +341,7 @@ export async function updateCall(req, res) {
     callOutcome,
     coordinatorNotes,
     nextAction,
+    scheduledAt,
     aiSummary,
     aiGuidance,
     status,
@@ -393,6 +442,7 @@ export async function updateCall(req, res) {
       followUpResult.rows[0].follow_up_id,
       status,
       nextAction,
+      scheduledAt,
     );
 
     const call = await getCall(client, id);

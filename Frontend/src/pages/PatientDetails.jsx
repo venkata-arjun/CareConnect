@@ -16,7 +16,12 @@ import StatusBadge from "../components/common/StatusBadge";
 import FollowUpOverview from "../components/patient/FollowUpOverview";
 import PatientInfoCard from "../components/patient/PatientInfoCard";
 import RiskInformation from "../components/patient/RiskInformation";
-import { createFollowUp, getPatient, getPatientRisk } from "../services/api";
+import {
+  createFollowUp,
+  formatDateTime,
+  getPatient,
+  getPatientRisk,
+} from "../services/api";
 
 const focusRing =
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2";
@@ -296,6 +301,10 @@ function PatientDetails() {
     </button>
   );
 
+  const nextFollowUp = patient?.followUps?.find(
+    (followUp) => followUp.status === "Pending" && followUp.scheduledAt,
+  );
+
   return (
     <div className="min-h-screen bg-slate-100">
       <Header />
@@ -391,7 +400,15 @@ function PatientDetails() {
                 </div>
 
                 <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center lg:justify-end">
-                  <StatusBadge status={patient.status} />
+                  <div className="flex flex-col items-start gap-1">
+                    <StatusBadge status={patient.status} />
+                    <span className="text-xs font-medium text-slate-500">
+                      Next follow-up:{" "}
+                      {nextFollowUp
+                        ? formatDateTime(nextFollowUp.scheduledAt)
+                        : "Not needed"}
+                    </span>
+                  </div>
                   {callButton("hidden lg:flex")}
                 </div>
               </div>

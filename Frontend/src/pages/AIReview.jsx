@@ -50,6 +50,7 @@ function AIReview() {
         callOutcome: draft?.callOutcome,
         coordinatorNotes: draft?.coordinatorNotes,
         nextAction: draft?.nextAction,
+        scheduledAt: draft?.scheduledAt,
         aiSummary: draft?.aiSummary,
         aiGuidance: draft?.aiGuidance,
       });

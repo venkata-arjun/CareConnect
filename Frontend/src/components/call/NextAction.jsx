@@ -9,7 +9,9 @@ const actions = [
 function NextAction({ value, onChange }) {
   return (
     <fieldset>
-      <legend className="text-[11px] font-semibold tracking-wide text-slate-500">NEXT ACTION</legend>
+      <legend className="text-[11px] font-semibold tracking-wide text-slate-500">
+        NEXT ACTION
+      </legend>
       <div className="mt-3 grid gap-3">
         {actions.map((action) => (
           <CallOption
@@ -18,7 +20,7 @@ function NextAction({ value, onChange }) {
             value={action}
             label={action}
             checked={value === action}
-            onChange={(event) => onChange(event.target.value)}
+            onChange={(event) => onChange(event.currentTarget.value)}
           />
         ))}
       </div>

@@ -13,7 +13,8 @@ const patientFields = `
   previous_follow_up,
   last_contact,
   next_action,
-  risk_factors
+  risk_factors,
+  updated_at
 `;
 
 const allowedRiskCategories = new Set(["HIGH", "MEDIUM", "LOW"]);
@@ -207,7 +208,17 @@ export async function updatePatient(req, res) {
 export async function getPatients(req, res) {
   try {
     const { rows } = await pool.query(`
-      SELECT ${patientFields}
+      SELECT
+        ${patientFields},
+        (
+          SELECT f.scheduled_at
+          FROM follow_ups f
+          WHERE f.patient_id = patients.id
+            AND f.scheduled_at IS NOT NULL
+            AND f.status = 'Pending'
+          ORDER BY f.scheduled_at ASC
+          LIMIT 1
+        ) AS next_follow_up_date
       FROM patients
       ORDER BY risk_score DESC
     `);

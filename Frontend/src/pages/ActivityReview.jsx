@@ -96,6 +96,8 @@ function ActivityReview() {
   async function saveActivity(status) {
     setIsSaving(true);
     try {
+      const followUpStatus =
+        finalAction === "Complete Follow-Up" ? "Completed" : "Pending";
       const updated = await updateCall(draft.activityId, {
         callOutcome: draft.callOutcome,
         coordinatorNotes: draft.coordinatorNotes,
@@ -103,11 +105,12 @@ function ActivityReview() {
           finalAction === "Complete Follow-Up"
             ? "Complete Follow-Up"
             : "Schedule Another Follow-Up",
+        scheduledAt: draft.scheduledAt,
         aiSummary: draft.aiSummary || null,
         aiGuidance: draft.aiGuidance || null,
         status,
       });
-      await updateFollowUpStatus(draft.followUpId, status);
+      await updateFollowUpStatus(draft.followUpId, followUpStatus);
       setActivity(updated);
       toast.success(
         status === "Completed" ? "Activity completed" : "Activity saved",
@@ -292,7 +295,9 @@ function ActivityReview() {
                   name="finalAction"
                   value={action}
                   checked={finalAction === action}
-                  onChange={(event) => setFinalAction(event.target.value)}
+                  onChange={(event) =>
+                    setFinalAction(event.currentTarget.value)
+                  }
                   className="h-4 w-4 shrink-0 accent-blue-600"
                 />
                 <Icon

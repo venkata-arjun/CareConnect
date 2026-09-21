@@ -374,7 +374,7 @@ function Worklist() {
                       inputMode={type === "number" ? "numeric" : undefined}
                       value={form[field]}
                       onChange={(event) =>
-                        updateForm(field, event.target.value)
+                        updateForm(field, event.currentTarget.value)
                       }
                       placeholder={placeholder}
                       className="mt-2 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm font-normal outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -387,7 +387,7 @@ function Worklist() {
                 <select
                   value={form.riskCategory}
                   onChange={(event) =>
-                    updateForm("riskCategory", event.target.value)
+                    updateForm("riskCategory", event.currentTarget.value)
                   }
                   className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 >
@@ -402,7 +402,7 @@ function Worklist() {
                   rows="3"
                   value={form.riskFactors}
                   onChange={(event) =>
-                    updateForm("riskFactors", event.target.value)
+                    updateForm("riskFactors", event.currentTarget.value)
                   }
                   placeholder="One factor per line"
                   className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-normal outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -469,7 +469,7 @@ function Worklist() {
                   required
                   value={followUpForm.patientId}
                   onChange={(event) => {
-                    setFollowUpForm({ patientId: event.target.value });
+                    setFollowUpForm({ patientId: event.currentTarget.value });
                     setFormError("");
                   }}
                   placeholder="e.g. P1001"

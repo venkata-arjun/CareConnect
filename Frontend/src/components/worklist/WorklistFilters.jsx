@@ -12,7 +12,7 @@ function WorklistFilters({ status, sort, onStatusChange, onSortChange }) {
         />
         <select
           value={status}
-          onChange={(event) => onStatusChange(event.target.value)}
+          onChange={(event) => onStatusChange(event.currentTarget.value)}
           className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white px-8 pr-7 text-xs text-slate-600 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:w-48 sm:px-9 sm:pr-9 sm:text-sm"
         >
           <option value="All">Filter: All Statuses</option>
@@ -30,7 +30,7 @@ function WorklistFilters({ status, sort, onStatusChange, onSortChange }) {
         />
         <select
           value={sort}
-          onChange={(event) => onSortChange(event.target.value)}
+          onChange={(event) => onSortChange(event.currentTarget.value)}
           className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white px-8 pr-7 text-xs text-slate-600 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:w-36 sm:px-9 sm:pr-9 sm:text-sm"
         >
           <option value="updated-desc">Sort: Last Updated ↓</option>

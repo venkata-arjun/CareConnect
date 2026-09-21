@@ -11,7 +11,9 @@ const outcomes = [
 function CallOutcome({ value, onChange }) {
   return (
     <fieldset>
-      <legend className="text-[11px] font-semibold tracking-wide text-slate-500">CALL OUTCOME</legend>
+      <legend className="text-[11px] font-semibold tracking-wide text-slate-500">
+        CALL OUTCOME
+      </legend>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         {outcomes.map((outcome) => (
           <CallOption
@@ -20,7 +22,7 @@ function CallOutcome({ value, onChange }) {
             value={outcome}
             label={outcome}
             checked={value === outcome}
-            onChange={(event) => onChange(event.target.value)}
+            onChange={(event) => onChange(event.currentTarget.value)}
           />
         ))}
       </div>

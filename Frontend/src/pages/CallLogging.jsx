@@ -34,6 +34,7 @@ function CallLogging() {
   const [nextAction, setNextAction] = useState(
     savedDraft?.nextAction || "Schedule Another Follow-Up",
   );
+  const [scheduledAt, setScheduledAt] = useState(savedDraft?.scheduledAt || "");
   const [notesError, setNotesError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -75,6 +76,7 @@ function CallLogging() {
         callOutcome,
         coordinatorNotes: coordinatorNotes.trim(),
         nextAction,
+        scheduledAt,
         callDateTime: new Date().toISOString(),
         coordinator:
           JSON.parse(localStorage.getItem("user") || "null")?.name ||
@@ -102,6 +104,7 @@ function CallLogging() {
           callOutcome,
           coordinatorNotes: coordinatorNotes.trim(),
           nextAction,
+          scheduledAt: scheduledAt || null,
         });
         saveDraft({
           aiSummary: aiResult.summary,
@@ -115,6 +118,7 @@ function CallLogging() {
           callOutcome,
           coordinatorNotes: coordinatorNotes.trim(),
           nextAction,
+          scheduledAt: scheduledAt || null,
         });
         saveDraft({ activityId: call.id, followUpId });
         toast.success("Call saved");
@@ -233,6 +237,22 @@ function CallLogging() {
 
           <div className="py-5 sm:py-6">
             <NextAction value={nextAction} onChange={setNextAction} />
+            {nextAction === "Schedule Another Follow-Up" && (
+              <label className="mt-5 block max-w-sm text-sm font-medium text-slate-700">
+                Next follow-up date
+                <input
+                  type="date"
+                  value={scheduledAt}
+                  onChange={(event) =>
+                    setScheduledAt(event.currentTarget.value)
+                  }
+                  className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-normal outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+                <span className="mt-1 block text-xs font-normal text-slate-500">
+                  Optional. Leave blank if a date is not needed yet.
+                </span>
+              </label>
+            )}
           </div>
 
           {/* Desktop / tablet actions */}

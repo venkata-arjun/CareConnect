@@ -131,7 +131,7 @@ function Login() {
                 autoComplete="username"
                 autoFocus
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => setEmail(event.currentTarget.value)}
                 placeholder="name@hospital.org"
                 aria-invalid={Boolean(errors.email)}
                 aria-describedby={errors.email ? "email-error" : undefined}
@@ -179,7 +179,7 @@ function Login() {
                 type={isPasswordVisible ? "text" : "password"}
                 autoComplete="current-password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => setPassword(event.currentTarget.value)}
                 placeholder="Password"
                 aria-invalid={Boolean(errors.password)}
                 aria-describedby={

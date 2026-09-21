@@ -1,16 +1,19 @@
-import { Plus, Search, UserRound } from "lucide-react";
+import { ArrowDownUp, Filter, Plus, Search, UserRound } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/layout/Header";
 import RiskBadge from "../components/common/RiskBadge";
 import StatusBadge from "../components/common/StatusBadge";
-import { formatDate, getPatients } from "../services/api";
+import { formatDate, formatDateTime, getPatients } from "../services/api";
 
 function Patients() {
   const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("All");
+  const [riskCategory, setRiskCategory] = useState("All");
+  const [sort, setSort] = useState("updated-desc");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -36,15 +39,32 @@ function Patients() {
 
   const filteredPatients = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return patients;
+    return patients
+      .filter((patient) => status === "All" || patient.status === status)
+      .filter(
+        (patient) =>
+          riskCategory === "All" || patient.riskCategory === riskCategory,
+      )
+      .filter(
+        (patient) =>
+          !query ||
+          patient.name.toLowerCase().includes(query) ||
+          patient.id.toLowerCase().includes(query) ||
+          patient.email?.toLowerCase().includes(query),
+      )
+      .slice()
+      .sort((first, second) => {
+        if (sort === "name-asc") return first.name.localeCompare(second.name);
+        if (sort === "risk-desc") return second.riskScore - first.riskScore;
+        if (sort === "risk-asc") return first.riskScore - second.riskScore;
 
-    return patients.filter(
-      (patient) =>
-        patient.name.toLowerCase().includes(query) ||
-        patient.id.toLowerCase().includes(query) ||
-        patient.email?.toLowerCase().includes(query),
-    );
-  }, [patients, search]);
+        const firstUpdated = new Date(first.updatedAt || 0).getTime();
+        const secondUpdated = new Date(second.updatedAt || 0).getTime();
+        return sort === "updated-asc"
+          ? firstUpdated - secondUpdated
+          : secondUpdated - firstUpdated;
+      });
+  }, [patients, riskCategory, search, sort, status]);
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -59,8 +79,8 @@ function Patients() {
               Review complete patient records and continue into follow-up.
             </p>
           </div>
-          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <label className="relative block w-full sm:w-80">
+          <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-[minmax(220px,280px)_140px_130px_160px_auto] sm:items-center sm:gap-3">
+            <label className="relative col-span-2 block sm:col-span-1">
               <span className="sr-only">Search patients</span>
               <Search
                 size={16}
@@ -68,10 +88,59 @@ function Patients() {
               />
               <input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => setSearch(event.currentTarget.value)}
                 placeholder="Search name, ID, or email"
                 className="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
+            </label>
+            <label className="relative min-w-0">
+              <span className="sr-only">Filter by status</span>
+              <Filter
+                aria-hidden="true"
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              />
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.currentTarget.value)}
+                className="h-10 w-full appearance-none rounded-lg border border-slate-300 bg-white px-8 text-xs text-slate-600 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:text-sm"
+              >
+                <option value="All">All statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </label>
+            <label className="relative min-w-0">
+              <span className="sr-only">Filter by risk</span>
+              <select
+                value={riskCategory}
+                onChange={(event) => setRiskCategory(event.currentTarget.value)}
+                className="h-10 w-full appearance-none rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-600 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:text-sm"
+              >
+                <option value="All">All risk levels</option>
+                <option value="HIGH">High risk</option>
+                <option value="MEDIUM">Medium risk</option>
+                <option value="LOW">Low risk</option>
+              </select>
+            </label>
+            <label className="relative min-w-0">
+              <span className="sr-only">Sort patients</span>
+              <ArrowDownUp
+                aria-hidden="true"
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              />
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.currentTarget.value)}
+                className="h-10 w-full appearance-none rounded-lg border border-slate-300 bg-white px-8 text-xs text-slate-600 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:text-sm"
+              >
+                <option value="updated-desc">Updated: newest</option>
+                <option value="updated-asc">Updated: oldest</option>
+                <option value="name-asc">Name: A-Z</option>
+                <option value="risk-desc">Risk: high-low</option>
+                <option value="risk-asc">Risk: low-high</option>
+              </select>
             </label>
             <button
               type="button"
@@ -110,7 +179,7 @@ function Patients() {
         ) : (
           <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1000px] text-sm">
+              <table className="w-full min-w-[1320px] text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-left">
                     {[
@@ -120,6 +189,8 @@ function Patients() {
                       "DISCHARGE DATE",
                       "RISK",
                       "STATUS",
+                      "NEXT FOLLOW-UP",
+                      "LAST UPDATED",
                       "ACTION",
                     ].map((heading) => (
                       <th
@@ -163,6 +234,15 @@ function Patients() {
                       </td>
                       <td className="whitespace-nowrap px-4 py-4">
                         <StatusBadge status={patient.status} />
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 text-slate-600">
+                        {formatDateTime(patient.nextFollowUpDate) ===
+                        "Not available"
+                          ? "Not needed"
+                          : formatDateTime(patient.nextFollowUpDate)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 text-slate-600">
+                        {formatDateTime(patient.updatedAt)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-4">
                         <button

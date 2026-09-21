@@ -134,10 +134,13 @@ function Dashboard() {
 
   const {
     metrics: dashboardMetrics,
-    riskDistribution: riskData,
-    coordinatorDistribution: coordinatorData,
-    completionStatus: completionData,
+    riskDistribution: riskData = [],
+    coordinatorDistribution: coordinatorData = [],
+    completionStatus: completionData = [],
   } = dashboard;
+
+  const formatChartLabel = (prefix, data) =>
+    `${prefix}: ${data.map((item) => `${item.label} ${item.value}`).join(", ") || "No data"}`;
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -212,19 +215,25 @@ function Dashboard() {
             title="Follow-Ups by Risk Category"
             data={riskData}
             colors={["bg-red-600", "bg-amber-600", "bg-green-600"]}
-            label={`Follow-ups by risk category: HIGH ${riskData[0].value}, MED ${riskData[1].value}, LOW ${riskData[2].value}`}
+            label={formatChartLabel("Follow-ups by risk category", riskData)}
           />
           <ChartCard
             title="Follow-Ups by Coordinator"
             data={coordinatorData}
             colors={["bg-indigo-600", "bg-indigo-600", "bg-indigo-600"]}
-            label={`Follow-ups by coordinator: Coordinator A ${coordinatorData[0].value}, Coordinator B ${coordinatorData[1].value}, Coordinator C ${coordinatorData[2].value}`}
+            label={formatChartLabel(
+              "Follow-ups by coordinator",
+              coordinatorData,
+            )}
           />
           <ChartCard
             title="Completed vs Pending"
             data={completionData}
             colors={["bg-green-600", "bg-amber-600"]}
-            label={`Completed versus pending follow-ups: Done ${completionData[0].value}, Pending ${completionData[1].value}`}
+            label={formatChartLabel(
+              "Completed versus pending follow-ups",
+              completionData,
+            )}
           />
         </div>
       </main>
