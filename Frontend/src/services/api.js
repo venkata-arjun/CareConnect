@@ -96,7 +96,10 @@ export function formatDateTime(dateValue) {
 
 function getProcedureStatus(status, followUps = []) {
   if (status === "Completed") return "Completed";
-  if (Array.isArray(followUps) && followUps.some((followUp) => followUp.status === "Completed")) {
+  if (
+    Array.isArray(followUps) &&
+    followUps.some((followUp) => followUp.status === "Completed")
+  ) {
     return "Completed";
   }
   return "Pending";

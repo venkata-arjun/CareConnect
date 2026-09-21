@@ -106,7 +106,8 @@ async function syncPatientFollowUp(
     [followUpId],
   );
 
-  const patientStatus = patientStatusResult.rows[0]?.patient_status || "Pending";
+  const patientStatus =
+    patientStatusResult.rows[0]?.patient_status || "Pending";
 
   await client.query(
     `
