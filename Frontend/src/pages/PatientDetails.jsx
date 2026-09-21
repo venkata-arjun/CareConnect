@@ -16,11 +16,7 @@ import StatusBadge from "../components/common/StatusBadge";
 import FollowUpOverview from "../components/patient/FollowUpOverview";
 import PatientInfoCard from "../components/patient/PatientInfoCard";
 import RiskInformation from "../components/patient/RiskInformation";
-import {
-  createFollowUp,
-  getPatient,
-  getPatientRisk,
-} from "../services/api";
+import { createFollowUp, getPatient, getPatientRisk } from "../services/api";
 
 const focusRing =
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2";
